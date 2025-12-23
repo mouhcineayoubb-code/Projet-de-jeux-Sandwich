@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sandwich Games INPT</title>
+    <link rel="stylesheet" href="s1.css" />
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="logo">🥪 Sandwich<span>Games</span></div>
+      <nav>
+        <ul>
+          <li><a href="#" onclick="showMenu()">Menu</a></li>
+          <li><a href="https://www.inpt.ac.ma" target="_blank">INPT</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="background-container"></div>
+
+    <main class="container">
+      <div id="landing-screen">
+        <h1>Bienvenue au Sandwich Club</h1>
+        <button class="enter-btn" onclick="showMenu()">
+          Entrer à notre menu de jeux !
+        </button>
+      </div>
+
+      <div id="menu-screen">
+        <h2 class="menu-title">Choisissez votre Jeu</h2>
+        <div class="cards-container">
+          <a
+            href="#"
+            class="card"
+            onclick="location.href='SubwaySandwich.html'"
+          >
+            <img src="SubwaySandwich.jpg" alt="Subway" />
+            <h3>Subway Sandwich</h3>
+            <p>
+              Gérez votre propre franchise et servez les clients rapidement !
+            </p>
+            <span class="play-btn">JOUER</span>
+          </a>
+
+          <a href="#" class="card" onclick="location.href='INPTSandwich.html'">
+            <img src="sndwch.jpg" alt="Creation" />
+            <h3>INPT Sandwich Maker</h3>
+            <p>
+              Le jeu officiel de création de sandwich de l'INPT. Soyez créatif !
+            </p>
+            <span class="play-btn">JOUER</span>
+          </a>
+        </div>
+      </div>
+
+      <div id="memory-game-screen" style="display: none">
+        <h2>Trouvez les Paires !</h2>
+        <div class="memory-grid" id="memory-board"></div>
+        <button class="btn btn-back" onclick="goToScreen('menu-screen')">
+          Retour au Menu
+        </button>
+      </div>
+    </main>
+
+    <footer class="main-footer">
+      <div class="footer-content">
+        <p>&copy; 2025 Sandwich Games INPT - Tous droits réservés.</p>
+        <p>Développé avec ❤️ par Mouhcine Ayoub</p>
+      </div>
+    </footer>
+
+    <script src="s1.js"></script>
+  </body>
+</html>

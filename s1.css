@@ -1,0 +1,314 @@
+/* --- RESET & GLOBAL --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body,
+html {
+  height: 100%;
+  overflow: hidden; /* Empêche le défilement */
+}
+
+/* --- BACKGROUND --- */
+/* Image de fond de sandwich appétissante */
+.background-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("S1.jpg");
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  filter: brightness(0.7); /* Assombrit l'image pour lire le texte */
+}
+
+/* --- CONTENEUR PRINCIPAL --- */
+.container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+/* --- ÉCRAN D'ACCUEIL (LANDING) --- */
+#landing-screen {
+  transition: opacity 0.5s ease-in-out;
+}
+
+h1 {
+  color: #fff;
+  font-size: 3.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.enter-btn {
+  padding: 15px 40px;
+  font-size: 1.5rem;
+  color: white;
+  background-color: #e67e22; /* Orange Sandwich */
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, background-color 0.2s;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.enter-btn:hover {
+  background-color: #d35400;
+  transform: scale(1.05);
+}
+
+/* --- ÉCRAN MENU (Caché au début) --- */
+#menu-screen {
+  display: none; /* Caché par défaut */
+  opacity: 0;
+  width: 90%;
+  max-width: 1200px;
+  animation: fadeIn 0.8s forwards;
+}
+
+.menu-title {
+  color: #fff;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.9); /* Effet verre */
+  border-radius: 15px;
+  padding: 20px;
+  width: 300px;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  text-decoration: none; /* Pour les liens */
+  color: #333;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 35px rgba(230, 126, 34, 0.6); /* Lueur orange */
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #d35400;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.play-btn {
+  padding: 10px 25px;
+  background-color: #27ae60;
+  color: white;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  .cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+  }
+}
+/* --- STYLE DU JEU MEMORY --- */
+#memory-game-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-top: 20px;
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cartes par ligne */
+  gap: 15px;
+  perspective: 1000px; /* Donne l'effet de profondeur 3D */
+}
+
+.memory-card {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  cursor: pointer;
+  transform-style: preserve-3d; /* Indispensable pour la 3D */
+  transition: transform 0.6s;
+}
+
+/* La classe qui retourne la carte */
+.memory-card.flip {
+  transform: rotateY(180deg);
+}
+
+.front-face,
+.back-face {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  position: absolute;
+  border-radius: 10px;
+  backface-visibility: hidden; /* Cache le dos quand retourné */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 3px solid #e67e22;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.front-face img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+/* La face avant est tournée au départ pour être cachée */
+.front-face {
+  transform: rotateY(180deg);
+}
+
+/* Le dos de la carte */
+.back-face {
+  background: #d35400;
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+  .memory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .memory-card {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+/* --- FOOTER --- */ /* Style du Header */
+.main-header {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 15px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.logo span {
+  color: #ffcc00; /* Couleur jaune sandwich */
+}
+
+.main-header nav ul {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.main-header nav ul li {
+  margin-left: 20px;
+}
+
+.main-header nav ul li a {
+  color: white;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.main-header nav ul li a:hover {
+  color: #ffcc00;
+}
+
+/* Style du Footer */
+.main-footer {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #bbb;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 50px;
+  width: 100%;
+}
+
+.footer-content p {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+/* Ajustement pour ne pas cacher le contenu sous le header */
+body {
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  flex: 1; /* Pousse le footer vers le bas si la page est vide */
+}

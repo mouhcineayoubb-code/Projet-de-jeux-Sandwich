@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Subway Sandwich: HARDCORE MODE</title>
+    <style>
+      /* --- CSS GLOBAL --- */
+      body {
+        margin: 0;
+        background-color: #1a0505;
+        font-family: "Segoe UI", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #game-container {
+        position: relative;
+        width: 400px;
+        height: 600px;
+        background-color: #333;
+        border: 4px solid #ff4444;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 0 40px rgba(255, 0, 0, 0.4);
+      }
+
+      .lane-marker {
+        position: absolute;
+        width: 4px;
+        height: 100%;
+        background-image: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.6) 50%,
+          transparent 50%
+        );
+        background-size: 10px 60px;
+        top: 0;
+      }
+      #line-1 {
+        left: 33%;
+      }
+      #line-2 {
+        left: 66%;
+      }
+
+      /* --- UI / HUD (CORRIGÉ ICI) --- */
+      #ui-layer {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        z-index: 20;
+      }
+
+      /* Le style des boîtes de texte */
+      .hud-box {
+        background: rgba(0, 0, 0, 0.7); /* Fond noir transparent */
+        border: 2px solid white;
+        border-radius: 15px;
+        padding: 8px 15px;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #height-meter {
+        color: #ffd700; /* Texte doré pour les couches */
+      }
+
+      /* --- JOUEUR ET OBJETS --- */
+      #player {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        width: 80px;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        transition: left 0.1s ease-out;
+        z-index: 10;
+      }
+
+      .effect-shake {
+        animation: shakeHard 0.3s ease-in-out;
+        filter: saturate(5) hue-rotate(-50deg);
+      }
+      @keyframes shakeHard {
+        0%,
+        100% {
+          transform: translateX(-50%);
+        }
+        10%,
+        90% {
+          transform: translateX(-60%) rotate(-10deg);
+        }
+        30%,
+        70% {
+          transform: translateX(-40%) rotate(10deg);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      .ingredient-layer {
+        width: 70px;
+        height: 22px;
+        background-color: #f4a460;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        text-align: center;
+        font-size: 16px;
+        line-height: 22px;
+        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+      }
+      .pain-bas {
+        background: #d4a373;
+        height: 25px;
+        border-radius: 6px 6px 15px 15px;
+      }
+      .viande {
+        background: #8b4513;
+        color: white;
+      }
+      .salade {
+        background: #32cd32;
+      }
+      .fromage {
+        background: #ffd700;
+      }
+      .tomate {
+        background: #ff4500;
+      }
+
+      .item {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        font-size: 35px;
+        text-align: center;
+        line-height: 55px;
+        top: -100px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.5);
+      }
+      .item[data-type="ingredient"] {
+        border-color: #2ecc71;
+        background: rgba(0, 255, 0, 0.1);
+      }
+      .item[data-type="obstacle"] {
+        border-color: #e74c3c;
+        background: rgba(255, 0, 0, 0.2);
+      }
+      .item[data-type="bomb"] {
+        border-color: #000;
+        background: rgba(0, 0, 0, 0.5);
+        animation: pulse 0.5s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          transform: translateX(-50%) scale(1.1);
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
+        }
+      }
+
+      /* ECRAN FIN */
+      #game-over-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(50, 0, 0, 0.95);
+        color: white;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 30;
+      }
+
+      button {
+        padding: 15px 40px;
+        font-size: 24px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        margin-top: 20px;
+        cursor: pointer;
+        box-shadow: 0 5px 0 #990000;
+      }
+
+      #damage-text {
+        position: absolute;
+        color: red;
+        font-size: 50px;
+        font-weight: 900;
+        display: none;
+        z-index: 100;
+        text-shadow: 2px 2px 0 #fff;
+        animation: floatUp 0.5s ease-out;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+      }
+      .back-to-menu {
+        position: fixed;
+        top: 90px; /* Juste en dessous du Header */
+        left: 20px;
+        background-color: #ffcc00; /* Jaune sandwich */
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        z-index: 1001; /* Pour être au-dessus du reste */
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .back-to-menu:hover {
+        background-color: #e6b800;
+        transform: translateX(
+          -5px
+        ); /* Petit effet de mouvement vers la gauche */
+      }
+
+      .back-to-menu .arrow {
+        font-size: 1.2rem;
+      }
+
+      /* Version mobile : on réduit un peu la taille */
+      @media (max-width: 600px) {
+        .back-to-menu {
+          padding: 8px 15px;
+          font-size: 0.8rem;
+          top: 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <div class="lane-marker" id="line-1"></div>
+      <div class="lane-marker" id="line-2"></div>
+
+      <div id="ui-layer">
+        <div class="hud-box"><span>⭐</span> <span id="score">0</span></div>
+        <div class="hud-box">
+          <span>🍔</span> <span id="height-meter">1</span>
+        </div>
+      </div>
+
+      <div id="damage-text">-3</div>
+      <div id="player"></div>
+
+      <div id="game-over-screen">
+        <h1 style="font-size: 40px; color: #ff6666">☠️ GAME OVER ☠️</h1>
+        <p id="cause-death" style="font-size: 18px; color: #ccc">Mort par...</p>
+        <p>Score: <span id="final-score">0</span></p>
+        <button onclick="startGame()">Réessayer</button>
+      </div>
+    </div>
+    <button class="back-to-menu" onclick="window.location.href='s1.html'">
+      <span class="arrow">←</span> Retour au Menu
+    </button>
+
+    <script>
+      const gameContainer = document.getElementById("game-container");
+      const player = document.getElementById("player");
+      const scoreDisplay = document.getElementById("score");
+      const heightDisplay = document.getElementById("height-meter");
+      const gameOverScreen = document.getElementById("game-over-screen");
+      const finalScoreDisplay = document.getElementById("final-score");
+      const causeDeathDisplay = document.getElementById("cause-death");
+      const damageText = document.getElementById("damage-text");
+
+      // Config HARDCORE
+      const lanePositions = [16.66, 50, 83.33];
+      let currentLane = 1;
+      let gameRunning = false;
+      let score = 0;
+      let speed = 0;
+      let speedBase = 6;
+      let spawnRate = 50;
+      let frameCount = 0;
+      let items = [];
+      let sandwichStack = [];
+
+      const ingredientsData = [
+        { type: "viande", emoji: "🥩" },
+        { type: "salade", emoji: "🥬" },
+        { type: "fromage", emoji: "🧀" },
+        { type: "tomate", emoji: "🍅" },
+      ];
+      const obstaclesData = ["🧱", "🗑️", "💩", "🚧"];
+
+      document.addEventListener("keydown", (e) => {
+        if (!gameRunning) return;
+        if (e.key === "ArrowLeft" && currentLane > 0) currentLane--;
+        else if (e.key === "ArrowRight" && currentLane < 2) currentLane++;
+        player.style.left = lanePositions[currentLane] + "%";
+      });
+
+      function updateSandwichVisuals() {
+        player.innerHTML = "";
+        let baseBread = document.createElement("div");
+        baseBread.className = "ingredient-layer pain-bas";
+        baseBread.innerText = "🍞";
+        player.appendChild(baseBread);
+
+        sandwichStack.forEach((ing) => {
+          let div = document.createElement("div");
+          div.className = `ingredient-layer ${ing.type}`;
+          div.innerText = ing.emoji;
+          player.appendChild(div);
+        });
+
+        // Mise à jour du compteur avec la nouvelle structure
+        let totalLayers = sandwichStack.length + 1;
+        heightDisplay.innerText = totalLayers;
+
+        // Changement de couleur si danger (1 couche restante)
+        if (totalLayers === 1) {
+          heightDisplay.parentElement.style.borderColor = "red";
+          heightDisplay.style.color = "red";
+        } else {
+          heightDisplay.parentElement.style.borderColor = "white";
+          heightDisplay.style.color = "#FFD700";
+        }
+      }
+
+      function addIngredient(info) {
+        sandwichStack.push(info);
+        updateSandwichVisuals();
+        score += 100;
+      }
+
+      function takeDamage(amount) {
+        player.classList.remove("effect-shake");
+        void player.offsetWidth;
+        player.classList.add("effect-shake");
+
+        damageText.style.display = "block";
+        damageText.style.top = player.offsetTop - 60 + "px"; // Un peu plus haut
+        damageText.style.left = player.offsetLeft + 10 + "px";
+        setTimeout(() => (damageText.style.display = "none"), 500);
+
+        for (let k = 0; k < amount; k++) {
+          if (sandwichStack.length > 0) {
+            sandwichStack.pop();
+          } else {
+            gameOver("Sandwich détruit !");
+            return;
+          }
+        }
+        updateSandwichVisuals();
+      }
+
+      function spawnItem() {
+        const item = document.createElement("div");
+        item.className = "item";
+
+        const rand = Math.random();
+        const lane = Math.floor(Math.random() * 3);
+
+        item.dataset.lane = lane;
+        item.style.left = lanePositions[lane] + "%";
+
+        if (rand < 0.1) {
+          item.dataset.type = "bomb";
+          item.innerText = "💣";
+        } else if (rand < 0.55) {
+          item.dataset.type = "obstacle";
+          item.innerText =
+            obstaclesData[Math.floor(Math.random() * obstaclesData.length)];
+        } else {
+          const specificIngredient =
+            ingredientsData[Math.floor(Math.random() * ingredientsData.length)];
+          item.dataset.type = "ingredient";
+          item.dataset.ingredientInfo = JSON.stringify(specificIngredient);
+          item.innerText = specificIngredient.emoji;
+        }
+
+        gameContainer.appendChild(item);
+        items.push({
+          element: item,
+          lane: lane,
+          y: -70,
+          type: item.dataset.type,
+        });
+      }
+
+      function gameLoop() {
+        if (!gameRunning) return;
+
+        frameCount++;
+        score += 0.5;
+        scoreDisplay.innerText = Math.floor(score);
+
+        if (frameCount % 200 === 0) speed += 1;
+
+        if (frameCount % spawnRate === 0) spawnItem();
+
+        for (let i = items.length - 1; i >= 0; i--) {
+          let obj = items[i];
+          obj.y += speed;
+          obj.element.style.top = obj.y + "px";
+
+          if (obj.y > 480 && obj.y < 560) {
+            if (obj.lane === currentLane) {
+              if (obj.type === "ingredient") {
+                addIngredient(JSON.parse(obj.element.dataset.ingredientInfo));
+              } else if (obj.type === "bomb") {
+                gameOver("EXPLOSION 💣");
+              } else {
+                takeDamage(3);
+              }
+              obj.element.remove();
+              items.splice(i, 1);
+              continue;
+            }
+          }
+
+          if (obj.y > 620) {
+            obj.element.remove();
+            items.splice(i, 1);
+          }
+        }
+        requestAnimationFrame(gameLoop);
+      }
+
+      function gameOver(cause) {
+        if (!gameRunning) return;
+        gameRunning = false;
+        causeDeathDisplay.innerText = cause || "Écrasé";
+        finalScoreDisplay.innerText = Math.floor(score);
+        gameOverScreen.style.display = "flex";
+      }
+
+      function startGame() {
+        sandwichStack = [];
+        items.forEach((item) => item.element.remove());
+        items = [];
+        score = 0;
+        speed = speedBase;
+        spawnRate = 45;
+        currentLane = 1;
+        frameCount = 0;
+        gameRunning = true;
+
+        gameOverScreen.style.display = "none";
+        player.style.left = lanePositions[1] + "%";
+        updateSandwichVisuals();
+        requestAnimationFrame(gameLoop);
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>
