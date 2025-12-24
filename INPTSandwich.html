@@ -2,42 +2,52 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>INPT Snack Maker - Official Game</title>
+    <title>INPT Snack Maker - Version Finale</title>
     <style>
-      /* --- CSS : Design INPT --- */
+      /* --- Variables de Couleurs INPT --- */
+      :root {
+        --pain: #d4a373;
+        --viande: #8b4513;
+        --frites: #f1c40f;
+        --salade: #2ecc71;
+        --fromage: #f39c12;
+        --tomate: #e74c3c;
+        --sauce: #c0392b;
+        --inpt-blue: #0056b3;
+      }
+
       body {
         margin: 0;
         background-color: #f0f4f8;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        color: #333;
       }
 
       #game-wrapper {
-        width: 950px;
-        height: 700px;
+        width: 980px;
+        height: 720px;
         background: white;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        border: 3px solid #0056b3; /* Bleu INPT */
+        border: 3px solid var(--inpt-blue);
+        position: relative;
+        transition: border-color 0.3s; /* Transition pour le feedback */
       }
 
-      /* En-tête avec Logo */
       header {
-        background: linear-gradient(90deg, #0056b3, #003d80);
+        background: linear-gradient(90deg, var(--inpt-blue), #003d80);
         color: white;
         padding: 10px 30px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         height: 70px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
 
       .logo-area {
@@ -47,8 +57,6 @@
         font-size: 24px;
         font-weight: bold;
       }
-
-      /* Si tu as le vrai logo, remplace le src */
       #inpt-logo {
         height: 50px;
         width: 50px;
@@ -63,38 +71,42 @@
         font-weight: bold;
         display: flex;
         gap: 20px;
+        align-items: center;
+      }
+      .sound-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        color: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
       }
 
-      /* Zone Principale */
       #main-area {
         flex: 1;
         display: flex;
-        position: relative;
       }
 
-      /* Colonne Gauche : Le Client (INPTiste) */
+      /* --- Panneau Commande --- */
       #customer-panel {
-        width: 35%;
+        width: 32%;
         background: #eef6fc;
         padding: 20px;
         border-right: 2px solid #ddd;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
       }
 
-      /* Bulle de commande visuelle */
       .bubble {
         background: white;
         border: 2px solid #333;
         border-radius: 20px;
         padding: 15px;
-        margin-top: 10px;
         width: 90%;
-        min-height: 120px;
+        min-height: 150px;
         position: relative;
-        box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -110,152 +122,123 @@
         transform: translateX(-50%);
       }
 
-      .bubble h4 {
-        margin: 0 0 10px 0;
-        color: #555;
-        font-size: 14px;
-        text-transform: uppercase;
-      }
-
-      /* Conteneur des images de commande */
       #order-visuals {
         display: flex;
-        flex-direction: column-reverse; /* Important : pour afficher l'ordre de bas en haut comme le sandwich */
-        gap: 5px;
+        flex-direction: column-reverse;
+        gap: 6px;
         width: 100%;
         align-items: center;
-        max-height: 250px;
-        overflow-y: auto;
       }
 
       .order-icon {
-        width: 180px;
-        height: 25px;
-        border-radius: 5px;
+        width: 140px;
+        height: 24px;
+        border-radius: 6px;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 14px;
         color: white;
-        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         font-weight: bold;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+        flex-shrink: 0;
       }
 
-      /* Infos Client */
       #customer-info {
         margin-top: 30px;
         text-align: center;
       }
       #customer-avatar {
-        font-size: 90px;
+        font-size: 80px;
+        margin-bottom: 5px;
       }
       #customer-filiere {
         font-weight: 900;
-        font-size: 22px;
-        color: #0056b3;
-        margin: 5px 0;
-      }
-      #customer-year {
-        font-weight: bold;
-        color: #666;
-        background: #ddd;
-        padding: 2px 10px;
-        border-radius: 10px;
-        font-size: 14px;
+        font-size: 24px;
+        color: var(--inpt-blue);
+        text-transform: uppercase;
       }
 
-      /* Colonne Droite : Préparation */
+      /* --- Zone Plateau --- */
       #prep-area {
-        width: 65%;
+        width: 68%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-end;
-        padding-bottom: 20px;
+        padding-bottom: 30px;
         background-image: radial-gradient(#ccc 10%, transparent 10%);
         background-size: 20px 20px;
       }
-
       #plate {
         width: 300px;
-        height: 380px;
+        height: 400px;
         display: flex;
         flex-direction: column-reverse;
         align-items: center;
         justify-content: flex-start;
-        margin-bottom: 10px;
         position: relative;
       }
-
       #plate::before {
         content: "";
         position: absolute;
         bottom: -15px;
         width: 260px;
         height: 15px;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.1);
         border-radius: 50%;
       }
 
-      /* Styles des ingrédients (Partagés entre bouton, commande et plateau) */
-      .ing-style {
+      .layer {
+        width: 200px;
+        height: 35px;
+        border-radius: 8px;
+        margin-bottom: -10px;
+        z-index: 10;
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-      .pain {
-        background: #d4a373;
-        border: 1px solid #b08d55;
-      }
-      .viande {
-        background: #8b4513;
-      }
-      .frites {
-        background: #f1c40f;
-        color: black !important;
-        text-shadow: none !important;
-        border: 1px solid #d4ac0d;
-      }
-      .salade {
-        background: #2ecc71;
-      }
-      .fromage {
-        background: #f39c12;
-      }
-      .tomate {
-        background: #e74c3c;
-      }
-      .sauce {
-        background: #c0392b;
-      }
-
-      /* Couches sur le plateau */
-      .layer {
-        width: 200px;
-        height: 32px;
-        border-radius: 8px;
-        margin-bottom: -8px;
-        z-index: 10;
         color: white;
         font-weight: bold;
-        text-shadow: 1px 1px 2px black;
-        animation: dropIn 0.2s cubic-bezier(0.5, 0, 0.5, 1.5);
+        animation: dropIn 0.2s ease-out;
         border: 2px solid rgba(0, 0, 0, 0.1);
       }
+
+      /* Couleurs */
+      .pain {
+        background-color: var(--pain);
+      }
+      .viande {
+        background-color: var(--viande);
+      }
+      /* CORRECTION ICI : border-style: none; pour enlever les pointillés */
+      .frites {
+        background-color: var(--frites);
+        color: black;
+        border-style: none;
+      }
+      .salade {
+        background-color: var(--salade);
+      }
+      .fromage {
+        background-color: var(--fromage);
+      }
+      .tomate {
+        background-color: var(--tomate);
+      }
+      .sauce {
+        background-color: var(--sauce);
+      }
+
       .layer.pain {
-        width: 220px;
-        height: 40px;
+        width: 230px;
+        height: 45px;
         border-radius: 15px;
       }
       .layer.sauce {
         width: 180px;
-        height: 15px;
+        height: 18px;
         border-radius: 50px;
-      }
-      .layer.frites {
-        width: 190px;
-        border-style: dashed;
       }
 
       @keyframes dropIn {
@@ -269,72 +252,89 @@
         }
       }
 
-      /* Contrôles */
+      /* --- Contrôles + et - --- */
       #controls {
         background: #fff;
         padding: 15px;
-        width: 100%;
         display: flex;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         border-top: 2px solid #ddd;
       }
 
-      .btn-ing {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 13px;
-        transition: transform 0.1s;
+      .ing-control {
         display: flex;
         flex-direction: column;
         align-items: center;
-        color: white;
-        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
-        width: 70px;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        width: 90px;
       }
-      .btn-ing:active {
-        transform: translateY(4px);
-        box-shadow: none;
+      .ing-name {
+        font-size: 11px;
+        font-weight: bold;
+        margin-bottom: 8px;
       }
-      .btn-ing span {
-        font-size: 22px;
-        margin-bottom: 2px;
+      .btn-group {
+        display: flex;
+        gap: 6px;
       }
 
-      .btn-action {
-        padding: 0 20px;
-        font-size: 16px;
-        border-radius: 8px;
+      .btn-sm {
+        width: 38px;
+        height: 38px;
         border: none;
+        border-radius: 8px;
         cursor: pointer;
-        font-weight: bold;
         color: white;
+        font-weight: bold;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-plus {
+        background: #27ae60;
+        box-shadow: 0 3px 0 #1e8449;
+      }
+      .btn-minus {
+        background: #c0392b;
+        box-shadow: 0 3px 0 #922b21;
+      }
+      .btn-sm:active {
+        transform: translateY(2px);
+        box-shadow: none;
+      }
+
+      #btn-serve {
+        background: var(--inpt-blue);
+        border: none;
+        color: white;
+        padding: 0 25px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 18px;
+        margin-left: 10px;
       }
       #btn-trash {
         background: #7f8c8d;
-      }
-      #btn-serve {
-        background: #27ae60;
-        font-size: 18px;
-        box-shadow: 0 4px 0 #1e8449;
-        width: 120px;
-      }
-      #btn-serve:active {
-        transform: translateY(4px);
-        box-shadow: none;
+        border: none;
+        color: white;
+        padding: 0 15px;
+        border-radius: 10px;
+        cursor: pointer;
       }
 
-      /* Écrans */
       #overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.92);
+        background: rgba(0, 0, 0, 0.9);
         color: white;
         display: none;
         flex-direction: column;
@@ -342,94 +342,78 @@
         align-items: center;
         z-index: 100;
       }
-      #restart-btn {
-        padding: 15px 40px;
-        font-size: 22px;
-        background: #f1c40f;
-        color: #333;
-        font-weight: bold;
-        border: none;
-        border-radius: 50px;
-        cursor: pointer;
-        margin-top: 20px;
-      }
 
-      .feedback {
-        position: absolute;
-        font-size: 50px;
-        font-weight: 900;
-        top: 40%;
-        left: 60%;
-        transform: translate(-50%, -50%);
-        animation: popUp 0.8s forwards;
-        z-index: 50;
-        text-shadow: 3px 3px 0 white;
-        pointer-events: none;
-      }
       .back-to-menu {
         position: fixed;
-        top: 90px; /* Juste en dessous du Header */
-        left: 1150px;
-        background-color: #ffcc00; /* Jaune sandwich */
-        color: #000;
+        top: 20px;
+        left: 20px;
+        background: #ffcc00;
         border: none;
         padding: 10px 20px;
-        font-size: 1rem;
         font-weight: bold;
         border-radius: 50px;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-        z-index: 1001; /* Pour être au-dessus du reste */
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
 
-      .back-to-menu:hover {
-        background-color: #e6b800;
-        transform: translateX(
-          -5px
-        ); /* Petit effet de mouvement vers la gauche */
+      /* FEEDBACK VISUEL */
+      .feedback-pop {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 60px;
+        font-weight: 900;
+        z-index: 100;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        animation: popAndFade 1s forwards;
+      }
+      .feedback-good {
+        color: #27ae60;
+      }
+      .feedback-bad {
+        color: #c0392b;
       }
 
-      .back-to-menu .arrow {
-        font-size: 1.2rem;
-      }
-
-      /* Version mobile : on réduit un peu la taille */
-      @media (max-width: 600px) {
-        .back-to-menu {
-          padding: 8px 15px;
-          font-size: 0.8rem;
-          top: 80px;
-        }
-      }
-      @keyframes popUp {
+      @keyframes popAndFade {
         0% {
           opacity: 0;
-          transform: scale(0);
+          transform: translate(-50%, -50%) scale(0.5);
         }
         50% {
           opacity: 1;
-          transform: scale(1.2);
+          transform: translate(-50%, -50%) scale(1.2);
         }
         100% {
           opacity: 0;
-          transform: translateY(-100px);
+          transform: translate(-50%, -80%) scale(1);
         }
       }
     </style>
   </head>
   <body>
+    <audio id="game-music" loop>
+      <source
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+
     <div id="game-wrapper">
       <header>
         <div class="logo-area">
-          <img id="inpt-logo" src="inpt.png" alt="Logo INPT" />
+          <img
+            id="inpt-logo"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Logo_inpt.png/600px-Logo_inpt.png"
+            alt="Logo INPT"
+          />
           <span>INPT SNACK</span>
         </div>
         <div class="stats-area">
-          <span>⏳ <span id="timer">60</span>s</span>
+          <button id="sound-btn" class="sound-toggle" onclick="toggleSound()">
+            🔊
+          </button>
+          <span>⏳ <span id="timer">90</span>s</span>
           <span>💰 <span id="score">0</span> DH</span>
         </div>
       </header>
@@ -437,93 +421,95 @@
       <div id="main-area">
         <div id="customer-panel">
           <div class="bubble">
-            <h4>Commande :</h4>
+            <h4 style="margin: 0 0 10px 0; color: #888">COMMANDE :</h4>
             <div id="order-visuals"></div>
           </div>
-
           <div id="customer-info">
             <div id="customer-avatar">😎</div>
-            <div id="customer-filiere">ASEDS</div>
-            <span id="customer-year">2ème Année</span>
+            <div id="customer-filiere" id="filiere-text">ASEDS</div>
+            <div id="customer-year" id="year-text">2ème Année</div>
           </div>
         </div>
-
         <div id="prep-area">
           <div id="plate"></div>
         </div>
       </div>
 
       <div id="controls">
-        <button class="btn-ing pain" onclick="addIng('pain')">
-          <span>🥖</span>Pain
-        </button>
-        <button class="btn-ing sauce" onclick="addIng('sauce')">
-          <span>🌶️</span>Harissa
-        </button>
-        <button class="btn-ing viande" onclick="addIng('viande')">
-          <span>🥩</span>Kafta
-        </button>
-        <button class="btn-ing frites" onclick="addIng('frites')">
-          <span>🍟</span>Frites
-        </button>
-        <button class="btn-ing fromage" onclick="addIng('fromage')">
-          <span>🧀</span>Fromage
-        </button>
-        <button class="btn-ing salade" onclick="addIng('salade')">
-          <span>🥬</span>Salade
-        </button>
-        <button class="btn-ing tomate" onclick="addIng('tomate')">
-          <span>🍅</span>Tomate
-        </button>
-
-        <button class="btn-action" id="btn-trash" onclick="trashSandwich()">
-          🗑️
-        </button>
-        <button class="btn-action" id="btn-serve" onclick="serveSandwich()">
-          SERVIR
-        </button>
+        <script>
+          const ings = [
+            { id: "pain", icon: "🥖", name: "Pain" },
+            { id: "sauce", icon: "🌶️", name: "Harissa" },
+            { id: "viande", icon: "🥩", name: "Kafta" },
+            { id: "frites", icon: "🍟", name: "Frites" },
+            { id: "fromage", icon: "🧀", name: "Fromage" },
+            { id: "salade", icon: "🥬", name: "Salade" },
+            { id: "tomate", icon: "🍅", name: "Tomate" },
+          ];
+          ings.forEach((ing) => {
+            document.write(`
+                        <div class="ing-control">
+                            <span class="ing-name">${ing.icon} ${ing.name}</span>
+                            <div class="btn-group">
+                                <button class="btn-sm btn-minus" onclick="removeIng('${ing.id}')">-</button>
+                                <button class="btn-sm btn-plus" onclick="addIng('${ing.id}')">+</button>
+                            </div>
+                        </div>
+                    `);
+          });
+        </script>
+        <button id="btn-trash" onclick="trashSandwich()">🗑️</button>
+        <button id="btn-serve" onclick="serveSandwich()">SERVIR</button>
       </div>
 
       <div id="overlay">
-        <h1 style="color: #f1c40f">FIN DE SERVICE !</h1>
-        <p style="font-size: 24px">
-          Étudiants nourris : <span id="final-count">0</span>
+        <h1 style="color: #f1c40f">SERVICE TERMINÉ !</h1>
+        <p style="font-size: 20px">
+          Sandwiches servis : <span id="final-count">0</span>
         </p>
         <p style="font-size: 30px">
-          Chiffre d'affaire : <span id="final-score">0</span> DH
+          Score : <span id="final-score">0</span> DH
         </p>
-        <button id="restart-btn" onclick="startGame()">
-          Réouvrir le Snack
+        <button
+          id="restart-btn"
+          onclick="startGame()"
+          style="
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: none;
+            background: #27ae60;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+          "
+        >
+          REJOUER
         </button>
       </div>
     </div>
-    <button class="back-to-menu" onclick="window.location.href='s1.html'">
-      <span class="arrow">←</span> Retour au Menu
+
+    <button class="back-to-menu" onclick="alert('Retour au menu...')">
+      ← Retour
     </button>
 
     <script>
-      /* --- JAVASCRIPT --- */
-
       let currentStack = [];
       let currentOrder = [];
       let score = 0;
-      let timeLeft = 60;
+      let timeLeft = 90;
       let timerInterval;
       let gameActive = false;
-      let customersServed = 0;
 
-      // Config Ingrédients
       const ingredients = {
-        pain: { label: "Pain", class: "pain", icon: "🥖" },
-        viande: { label: "Kefta", class: "viande", icon: "🥩" },
-        frites: { label: "Frites", class: "frites", icon: "🍟" },
-        salade: { label: "Salade", class: "salade", icon: "🥬" },
-        fromage: { label: "Fromage", class: "fromage", icon: "🧀" },
-        tomate: { label: "Tomate", class: "tomate", icon: "🍅" },
-        sauce: { label: "Harissa", class: "sauce", icon: "🌶️" },
+        pain: { icon: "🥖", class: "pain" },
+        viande: { icon: "🥩", class: "viande" },
+        frites: { icon: "🍟", class: "frites" },
+        salade: { icon: "🥬", class: "salade" },
+        fromage: { icon: "🧀", class: "fromage" },
+        tomate: { icon: "🍅", class: "tomate" },
+        sauce: { icon: "🌶️", class: "sauce" },
       };
 
-      // --- NOUVEAU : Données INPT ---
       const filieres = [
         "ASEDS",
         "ICCN",
@@ -533,172 +519,135 @@
         "SESNUM",
         "CLOUD",
       ];
-      const annees = ["1ère Année", "2ème Année", "3ème Année"];
-      const avatars = ["👨‍💻", "👩‍💻", "🤔", "😎", "🤯", "🤓"];
+      const avatars = ["👨‍💻", "👩‍💻", "🤔", "😎", "🤓"];
 
-      // Elements
-      const plateEl = document.getElementById("plate");
-      const orderVisualsEl = document.getElementById("order-visuals");
-      const scoreEl = document.getElementById("score");
-      const timerEl = document.getElementById("timer");
-      const overlayEl = document.getElementById("overlay");
-      const avatarEl = document.getElementById("customer-avatar");
-      const filiereEl = document.getElementById("customer-filiere");
-      const yearEl = document.getElementById("customer-year");
+      function toggleSound() {
+        const m = document.getElementById("game-music");
+        const b = document.getElementById("sound-btn");
+        if (m.paused) {
+          m.play();
+          b.innerText = "🔊";
+        } else {
+          m.pause();
+          b.innerText = "🔇";
+        }
+      }
 
       function startGame() {
         score = 0;
-        timeLeft = 90; // Un peu plus de temps
-        customersServed = 0;
+        timeLeft = 90;
         gameActive = true;
-        overlayEl.style.display = "none";
-        updateUI();
-
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("score").innerText = "0";
+        updateTimer();
         clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-          timeLeft--;
-          timerEl.innerText = timeLeft;
-          if (timeLeft <= 0) endGame();
-        }, 1000);
-
+        timerInterval = setInterval(updateTimer, 1000);
         nextCustomer();
       }
 
-      function endGame() {
-        gameActive = false;
-        clearInterval(timerInterval);
-        document.getElementById("final-score").innerText = score;
-        document.getElementById("final-count").innerText = customersServed;
-        overlayEl.style.display = "flex";
+      function updateTimer() {
+        timeLeft--;
+        document.getElementById("timer").innerText = timeLeft;
+        if (timeLeft <= 0) {
+          gameActive = false;
+          clearInterval(timerInterval);
+          document.getElementById("overlay").style.display = "flex";
+          document.getElementById("final-score").innerText = score;
+          document.getElementById("final-count").innerText = score / 20; // Approximation
+        }
       }
 
       function nextCustomer() {
         trashSandwich();
-
-        // --- Génération Aléatoire INPT ---
-        const randFiliere =
+        document.getElementById("customer-filiere").innerText =
           filieres[Math.floor(Math.random() * filieres.length)];
-        const randAnnee = annees[Math.floor(Math.random() * annees.length)];
-        const randAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+        document.getElementById("customer-avatar").innerText =
+          avatars[Math.floor(Math.random() * avatars.length)];
 
-        filiereEl.innerText = randFiliere;
-        yearEl.innerText = randAnnee;
-        avatarEl.innerText = randAvatar;
+        // Générer commande
+        currentOrder = ["pain"];
+        const pool = Object.keys(ingredients).filter((k) => k !== "pain");
+        const len = Math.floor(Math.random() * 3) + 2;
+        for (let i = 0; i < len; i++)
+          currentOrder.push(pool[Math.floor(Math.random() * pool.length)]);
+        currentOrder.push("pain");
 
-        // Logique de couleur par filière (juste pour le fun)
-        if (randFiliere === "DATA") filiereEl.style.color = "#e67e22";
-        else if (randFiliere === "ASEDS") filiereEl.style.color = "#2980b9";
-        else filiereEl.style.color = "#0056b3";
-
-        // Générer Recette
-        const keys = Object.keys(ingredients);
-        const numIngs = Math.floor(Math.random() * 4) + 3; // 3 à 6 ingrédients
-
-        currentOrder = [];
-        currentOrder.push("pain"); // Bas
-
-        for (let i = 0; i < numIngs; i++) {
-          const randomKey = keys[Math.floor(Math.random() * keys.length)];
-          if (randomKey !== "pain") currentOrder.push(randomKey);
-        }
-
-        currentOrder.push("pain"); // Haut
-
-        displayOrderVisuals();
+        renderOrder();
       }
 
-      function displayOrderVisuals() {
-        orderVisualsEl.innerHTML = "";
-
-        // Pour l'affichage visuel, on parcourt le tableau.
-        // Comme le CSS est en column-reverse, le premier élément ajouté au DOM sera en BAS visuellement.
-        // Notre tableau currentOrder est [Bas, Milieu, ..., Haut].
-        // Donc on itère normalement.
-
-        currentOrder.forEach((ingKey) => {
-          const ing = ingredients[ingKey];
-
-          // Création de la "Photo" de l'ingrédient
-          let visualDiv = document.createElement("div");
-          visualDiv.className = `order-icon ${ing.class}`;
-          visualDiv.innerHTML = `${ing.icon} ${ing.label}`;
-
-          orderVisualsEl.appendChild(visualDiv);
+      function renderOrder() {
+        const container = document.getElementById("order-visuals");
+        container.innerHTML = "";
+        currentOrder.forEach((key) => {
+          const div = document.createElement("div");
+          div.className = `order-icon ${ingredients[key].class}`;
+          div.innerText =
+            ingredients[
+              ingredients[key].class === "sauce" ? "sauce" : key
+            ].icon;
+          container.appendChild(div);
         });
       }
 
       function addIng(type) {
         if (!gameActive) return;
-
         currentStack.push(type);
-        const ing = ingredients[type];
-
-        // Ajouter sur le plateau
         const div = document.createElement("div");
-        div.className = `layer ing-style ${ing.class}`;
-        div.innerText = ing.icon; // Juste l'icône sur le sandwich
-        plateEl.appendChild(div);
+        div.className = `layer ${ingredients[type].class} visual-${type}`;
+        div.innerText = ingredients[type].icon;
+        document.getElementById("plate").appendChild(div);
+      }
+
+      function removeIng(type) {
+        if (!gameActive) return;
+        const idx = currentStack.lastIndexOf(type);
+        if (idx !== -1) {
+          currentStack.splice(idx, 1);
+          const layers = document.getElementsByClassName(`visual-${type}`);
+          if (layers.length > 0) layers[layers.length - 1].remove();
+        }
       }
 
       function trashSandwich() {
         currentStack = [];
-        plateEl.innerHTML = "";
+        document.getElementById("plate").innerHTML = "";
+      }
+
+      function showFeedback(type, text) {
+        const wrapper = document.getElementById("game-wrapper");
+        const feedback = document.createElement("div");
+        feedback.className = `feedback-pop feedback-${type}`;
+        feedback.innerText = text;
+        document.body.appendChild(feedback);
+
+        if (type === "good") {
+          wrapper.style.borderColor = "#27ae60";
+        } else {
+          wrapper.style.borderColor = "#c0392b";
+        }
+
+        setTimeout(() => {
+          feedback.remove();
+          wrapper.style.borderColor = getComputedStyle(
+            document.documentElement
+          ).getPropertyValue("--inpt-blue");
+        }, 1000);
       }
 
       function serveSandwich() {
         if (!gameActive) return;
-
-        if (checkOrder()) {
-          score += 15; // Prix du sandwich
-          customersServed++;
-          showFeedback("MCI ! 👍", "#27ae60");
-          document.getElementById("game-wrapper").style.borderColor = "#2ecc71";
-          setTimeout(
-            () =>
-              (document.getElementById("game-wrapper").style.borderColor =
-                "#0056b3"),
-            300
-          );
-          setTimeout(nextCustomer, 800);
+        if (JSON.stringify(currentStack) === JSON.stringify(currentOrder)) {
+          // Succès
+          score += 20;
+          document.getElementById("score").innerText = score;
+          showFeedback("good", "PARFAIT ! 👍");
+          setTimeout(nextCustomer, 1000);
         } else {
-          score -= 5;
-          showFeedback("C'EST FAUX ! 😡", "#c0392b");
-          const wrapper = document.getElementById("game-wrapper");
-          wrapper.animate(
-            [
-              { transform: "translateX(0)" },
-              { transform: "translateX(-10px)" },
-              { transform: "translateX(10px)" },
-              { transform: "translateX(0)" },
-            ],
-            { duration: 300 }
-          );
+          // Erreur
+          showFeedback("bad", "ERREUR ! 😡");
         }
-        updateUI();
       }
 
-      function checkOrder() {
-        if (currentStack.length !== currentOrder.length) return false;
-        for (let i = 0; i < currentStack.length; i++) {
-          if (currentStack[i] !== currentOrder[i]) return false;
-        }
-        return true;
-      }
-
-      function updateUI() {
-        scoreEl.innerText = score;
-      }
-
-      function showFeedback(text, color) {
-        const el = document.createElement("div");
-        el.className = "feedback";
-        el.innerText = text;
-        el.style.color = color;
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-      }
-
-      // Init
       startGame();
     </script>
   </body>
