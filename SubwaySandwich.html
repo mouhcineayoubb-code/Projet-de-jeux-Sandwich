@@ -231,9 +231,9 @@
       }
       .back-to-menu {
         position: fixed;
-        top: 90px; /* Juste en dessous du Header */
+        top: 90px;
         left: 20px;
-        background-color: #ffcc00; /* Jaune sandwich */
+        background-color: #ffcc00;
         color: #000;
         border: none;
         padding: 10px 20px;
@@ -243,35 +243,52 @@
         cursor: pointer;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
-        z-index: 1001; /* Pour être au-dessus du reste */
+        z-index: 1001;
         display: flex;
         align-items: center;
         gap: 8px;
       }
 
-      .back-to-menu:hover {
-        background-color: #e6b800;
-        transform: translateX(
-          -5px
-        ); /* Petit effet de mouvement vers la gauche */
-      }
-
-      .back-to-menu .arrow {
-        font-size: 1.2rem;
-      }
-
-      /* Version mobile : on réduit un peu la taille */
-      @media (max-width: 600px) {
-        .back-to-menu {
-          padding: 8px 15px;
-          font-size: 0.8rem;
-          top: 80px;
-        }
+      /* --- BOUTON SON --- */
+      #sound-toggle {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid white;
+        color: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 70px;
+        right: 15px;
+        z-index: 100;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
       }
     </style>
   </head>
   <body>
+    <audio id="music-bg" loop>
+      <source src="subway_surfer_theme.mp4" type="audio/mpeg" />
+    </audio>
+    <audio id="sfx-coin">
+      <source
+        src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3"
+        !
+        type="audio/mpeg"
+      />
+    </audio>
+    <audio id="sfx-hit">
+      <source
+        src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+
     <div id="game-container">
+      <div id="sound-toggle">🔊</div>
       <div class="lane-marker" id="line-1"></div>
       <div class="lane-marker" id="line-2"></div>
 
@@ -305,6 +322,21 @@
       const finalScoreDisplay = document.getElementById("final-score");
       const causeDeathDisplay = document.getElementById("cause-death");
       const damageText = document.getElementById("damage-text");
+
+      // ELEMENTS AUDIO
+      const musicBg = document.getElementById("music-bg");
+      const sfxCoin = document.getElementById("sfx-coin");
+      const sfxHit = document.getElementById("sfx-hit");
+      const soundToggle = document.getElementById("sound-toggle");
+      let soundEnabled = true;
+
+      // Gestion du bouton son
+      soundToggle.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        soundToggle.innerText = soundEnabled ? "🔊" : "🔇";
+        if (!soundEnabled) musicBg.pause();
+        else if (gameRunning) musicBg.play();
+      });
 
       // Config HARDCORE
       const lanePositions = [16.66, 50, 83.33];
@@ -347,11 +379,9 @@
           player.appendChild(div);
         });
 
-        // Mise à jour du compteur avec la nouvelle structure
         let totalLayers = sandwichStack.length + 1;
         heightDisplay.innerText = totalLayers;
 
-        // Changement de couleur si danger (1 couche restante)
         if (totalLayers === 1) {
           heightDisplay.parentElement.style.borderColor = "red";
           heightDisplay.style.color = "red";
@@ -365,6 +395,10 @@
         sandwichStack.push(info);
         updateSandwichVisuals();
         score += 100;
+        if (soundEnabled) {
+          sfxCoin.currentTime = 0;
+          sfxCoin.play();
+        }
       }
 
       function takeDamage(amount) {
@@ -372,8 +406,13 @@
         void player.offsetWidth;
         player.classList.add("effect-shake");
 
+        if (soundEnabled) {
+          sfxHit.currentTime = 0;
+          sfxHit.play();
+        }
+
         damageText.style.display = "block";
-        damageText.style.top = player.offsetTop - 60 + "px"; // Un peu plus haut
+        damageText.style.top = player.offsetTop - 60 + "px";
         damageText.style.left = player.offsetLeft + 10 + "px";
         setTimeout(() => (damageText.style.display = "none"), 500);
 
@@ -391,10 +430,8 @@
       function spawnItem() {
         const item = document.createElement("div");
         item.className = "item";
-
         const rand = Math.random();
         const lane = Math.floor(Math.random() * 3);
-
         item.dataset.lane = lane;
         item.style.left = lanePositions[lane] + "%";
 
@@ -424,13 +461,10 @@
 
       function gameLoop() {
         if (!gameRunning) return;
-
         frameCount++;
         score += 0.5;
         scoreDisplay.innerText = Math.floor(score);
-
         if (frameCount % 200 === 0) speed += 1;
-
         if (frameCount % spawnRate === 0) spawnItem();
 
         for (let i = items.length - 1; i >= 0; i--) {
@@ -464,6 +498,7 @@
       function gameOver(cause) {
         if (!gameRunning) return;
         gameRunning = false;
+        musicBg.pause(); // Arrêter la musique
         causeDeathDisplay.innerText = cause || "Écrasé";
         finalScoreDisplay.innerText = Math.floor(score);
         gameOverScreen.style.display = "flex";
@@ -479,6 +514,12 @@
         currentLane = 1;
         frameCount = 0;
         gameRunning = true;
+
+        // LANCER LA MUSIQUE
+        if (soundEnabled) {
+          musicBg.currentTime = 0;
+          musicBg.play();
+        }
 
         gameOverScreen.style.display = "none";
         player.style.left = lanePositions[1] + "%";

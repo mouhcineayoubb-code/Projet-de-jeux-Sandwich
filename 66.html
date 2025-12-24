@@ -2,650 +2,529 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>INPT Snack Maker - Version Finale</title>
+    <title>Subway Sandwich: HARDCORE MODE</title>
     <style>
-      /* --- Variables de Couleurs INPT --- */
-      :root {
-        --pain: #d4a373;
-        --viande: #8b4513;
-        --frites: #f1c40f;
-        --salade: #2ecc71;
-        --fromage: #f39c12;
-        --tomate: #e74c3c;
-        --sauce: #c0392b;
-        --inpt-blue: #0056b3;
-      }
-
+      /* --- CSS GLOBAL --- */
       body {
         margin: 0;
-        background-color: #f0f4f8;
+        background-color: #1a0505;
         font-family: "Segoe UI", sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-      }
-
-      #game-wrapper {
-        width: 980px;
-        height: 720px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        display: flex;
-        flex-direction: column;
         overflow: hidden;
-        border: 3px solid var(--inpt-blue);
-        position: relative;
-        transition: border-color 0.3s; /* Transition pour le feedback */
       }
 
-      header {
-        background: linear-gradient(90deg, var(--inpt-blue), #003d80);
-        color: white;
-        padding: 10px 30px;
+      #game-container {
+        position: relative;
+        width: 400px;
+        height: 600px;
+        background-color: #333;
+        border: 4px solid #ff4444;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 0 40px rgba(255, 0, 0, 0.4);
+      }
+
+      .lane-marker {
+        position: absolute;
+        width: 4px;
+        height: 100%;
+        background-image: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.6) 50%,
+          transparent 50%
+        );
+        background-size: 10px 60px;
+        top: 0;
+      }
+      #line-1 {
+        left: 33%;
+      }
+      #line-2 {
+        left: 66%;
+      }
+
+      /* --- UI / HUD (CORRIGÉ ICI) --- */
+      #ui-layer {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        height: 70px;
+        z-index: 20;
       }
 
-      .logo-area {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        font-size: 24px;
-        font-weight: bold;
-      }
-      #inpt-logo {
-        height: 50px;
-        width: 50px;
-        background: white;
-        border-radius: 50%;
-        padding: 2px;
-        object-fit: contain;
-      }
-
-      .stats-area {
-        font-size: 20px;
-        font-weight: bold;
-        display: flex;
-        gap: 20px;
-        align-items: center;
-      }
-      .sound-toggle {
-        background: rgba(255, 255, 255, 0.2);
+      /* Le style des boîtes de texte */
+      .hud-box {
+        background: rgba(0, 0, 0, 0.7); /* Fond noir transparent */
         border: 2px solid white;
+        border-radius: 15px;
+        padding: 8px 15px;
         color: white;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
-      }
-
-      #main-area {
-        flex: 1;
+        font-weight: bold;
+        font-size: 18px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         display: flex;
-      }
-
-      /* --- Panneau Commande --- */
-      #customer-panel {
-        width: 32%;
-        background: #eef6fc;
-        padding: 20px;
-        border-right: 2px solid #ddd;
-        display: flex;
-        flex-direction: column;
         align-items: center;
+        gap: 8px;
       }
 
-      .bubble {
-        background: white;
-        border: 2px solid #333;
-        border-radius: 20px;
-        padding: 15px;
-        width: 90%;
-        min-height: 150px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      #height-meter {
+        color: #ffd700; /* Texte doré pour les couches */
       }
-      .bubble::after {
-        content: "";
+
+      /* --- JOUEUR ET OBJETS --- */
+      #player {
         position: absolute;
-        bottom: -12px;
+        bottom: 30px;
         left: 50%;
-        border-width: 12px 12px 0;
-        border-style: solid;
-        border-color: #333 transparent;
+        width: 80px;
         transform: translateX(-50%);
-      }
-
-      #order-visuals {
-        display: flex;
-        flex-direction: column-reverse;
-        gap: 6px;
-        width: 100%;
-        align-items: center;
-      }
-
-      .order-icon {
-        width: 140px;
-        height: 24px;
-        border-radius: 6px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 14px;
-        color: white;
-        font-weight: bold;
-        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
-        flex-shrink: 0;
-      }
-
-      #customer-info {
-        margin-top: 30px;
-        text-align: center;
-      }
-      #customer-avatar {
-        font-size: 80px;
-        margin-bottom: 5px;
-      }
-      #customer-filiere {
-        font-weight: 900;
-        font-size: 24px;
-        color: var(--inpt-blue);
-        text-transform: uppercase;
-      }
-
-      /* --- Zone Plateau --- */
-      #prep-area {
-        width: 68%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-        padding-bottom: 30px;
-        background-image: radial-gradient(#ccc 10%, transparent 10%);
-        background-size: 20px 20px;
-      }
-      #plate {
-        width: 300px;
-        height: 400px;
         display: flex;
         flex-direction: column-reverse;
         align-items: center;
-        justify-content: flex-start;
-        position: relative;
-      }
-      #plate::before {
-        content: "";
-        position: absolute;
-        bottom: -15px;
-        width: 260px;
-        height: 15px;
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 50%;
-      }
-
-      .layer {
-        width: 200px;
-        height: 35px;
-        border-radius: 8px;
-        margin-bottom: -10px;
+        transition: left 0.1s ease-out;
         z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        animation: dropIn 0.2s ease-out;
-        border: 2px solid rgba(0, 0, 0, 0.1);
       }
 
-      /* Couleurs */
-      .pain {
-        background-color: var(--pain);
+      .effect-shake {
+        animation: shakeHard 0.3s ease-in-out;
+        filter: saturate(5) hue-rotate(-50deg);
+      }
+      @keyframes shakeHard {
+        0%,
+        100% {
+          transform: translateX(-50%);
+        }
+        10%,
+        90% {
+          transform: translateX(-60%) rotate(-10deg);
+        }
+        30%,
+        70% {
+          transform: translateX(-40%) rotate(10deg);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      .ingredient-layer {
+        width: 70px;
+        height: 22px;
+        background-color: #f4a460;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        text-align: center;
+        font-size: 16px;
+        line-height: 22px;
+        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+      }
+      .pain-bas {
+        background: #d4a373;
+        height: 25px;
+        border-radius: 6px 6px 15px 15px;
       }
       .viande {
-        background-color: var(--viande);
-      }
-      /* CORRECTION ICI : border-style: none; pour enlever les pointillés */
-      .frites {
-        background-color: var(--frites);
-        color: black;
-        border-style: none;
+        background: #8b4513;
+        color: white;
       }
       .salade {
-        background-color: var(--salade);
+        background: #32cd32;
       }
       .fromage {
-        background-color: var(--fromage);
+        background: #ffd700;
       }
       .tomate {
-        background-color: var(--tomate);
-      }
-      .sauce {
-        background-color: var(--sauce);
+        background: #ff4500;
       }
 
-      .layer.pain {
-        width: 230px;
-        height: 45px;
-        border-radius: 15px;
+      .item {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        font-size: 35px;
+        text-align: center;
+        line-height: 55px;
+        top: -100px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.5);
       }
-      .layer.sauce {
-        width: 180px;
-        height: 18px;
-        border-radius: 50px;
+      .item[data-type="ingredient"] {
+        border-color: #2ecc71;
+        background: rgba(0, 255, 0, 0.1);
       }
-
-      @keyframes dropIn {
-        from {
-          transform: translateY(-100px);
-          opacity: 0;
+      .item[data-type="obstacle"] {
+        border-color: #e74c3c;
+        background: rgba(255, 0, 0, 0.2);
+      }
+      .item[data-type="bomb"] {
+        border-color: #000;
+        background: rgba(0, 0, 0, 0.5);
+        animation: pulse 0.5s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: translateX(-50%) scale(1);
         }
-        to {
-          transform: translateY(0);
-          opacity: 1;
+        50% {
+          transform: translateX(-50%) scale(1.1);
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
         }
       }
 
-      /* --- Contrôles + et - --- */
-      #controls {
-        background: #fff;
-        padding: 15px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        border-top: 2px solid #ddd;
-      }
-
-      .ing-control {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: #f8f9fa;
-        padding: 8px;
-        border-radius: 12px;
-        border: 1px solid #ddd;
-        width: 90px;
-      }
-      .ing-name {
-        font-size: 11px;
-        font-weight: bold;
-        margin-bottom: 8px;
-      }
-      .btn-group {
-        display: flex;
-        gap: 6px;
-      }
-
-      .btn-sm {
-        width: 38px;
-        height: 38px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        color: white;
-        font-weight: bold;
-        font-size: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .btn-plus {
-        background: #27ae60;
-        box-shadow: 0 3px 0 #1e8449;
-      }
-      .btn-minus {
-        background: #c0392b;
-        box-shadow: 0 3px 0 #922b21;
-      }
-      .btn-sm:active {
-        transform: translateY(2px);
-        box-shadow: none;
-      }
-
-      #btn-serve {
-        background: var(--inpt-blue);
-        border: none;
-        color: white;
-        padding: 0 25px;
-        border-radius: 10px;
-        font-weight: bold;
-        cursor: pointer;
-        font-size: 18px;
-        margin-left: 10px;
-      }
-      #btn-trash {
-        background: #7f8c8d;
-        border: none;
-        color: white;
-        padding: 0 15px;
-        border-radius: 10px;
-        cursor: pointer;
-      }
-
-      #overlay {
+      /* ECRAN FIN */
+      #game-over-screen {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(50, 0, 0, 0.95);
         color: white;
         display: none;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        z-index: 100;
+        z-index: 30;
       }
 
+      button {
+        padding: 15px 40px;
+        font-size: 24px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        margin-top: 20px;
+        cursor: pointer;
+        box-shadow: 0 5px 0 #990000;
+      }
+
+      #damage-text {
+        position: absolute;
+        color: red;
+        font-size: 50px;
+        font-weight: 900;
+        display: none;
+        z-index: 100;
+        text-shadow: 2px 2px 0 #fff;
+        animation: floatUp 0.5s ease-out;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+      }
       .back-to-menu {
         position: fixed;
-        top: 20px;
+        top: 90px;
         left: 20px;
-        background: #ffcc00;
+        background-color: #ffcc00;
+        color: #000;
         border: none;
         padding: 10px 20px;
+        font-size: 1rem;
         font-weight: bold;
         border-radius: 50px;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
-      /* FEEDBACK VISUEL */
-      .feedback-pop {
+      /* --- BOUTON SON --- */
+      #sound-toggle {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid white;
+        color: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 60px;
-        font-weight: 900;
+        top: 70px;
+        right: 15px;
         z-index: 100;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        animation: popAndFade 1s forwards;
-      }
-      .feedback-good {
-        color: #27ae60;
-      }
-      .feedback-bad {
-        color: #c0392b;
-      }
-
-      @keyframes popAndFade {
-        0% {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(0.5);
-        }
-        50% {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1.2);
-        }
-        100% {
-          opacity: 0;
-          transform: translate(-50%, -80%) scale(1);
-        }
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
       }
     </style>
   </head>
   <body>
-    <audio id="game-music" loop>
+    <audio id="music-bg" loop>
+      <source src="subway_surfer_theme.mp4" type="audio/mpeg" />
+    </audio>
+    <audio id="sfx-coin">
       <source
-        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3"
+        !
+        type="audio/mpeg"
+      />
+    </audio>
+    <audio id="sfx-hit">
+      <source
+        src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"
         type="audio/mpeg"
       />
     </audio>
 
-    <div id="game-wrapper">
-      <header>
-        <div class="logo-area">
-          <img
-            id="inpt-logo"
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Logo_inpt.png/600px-Logo_inpt.png"
-            alt="Logo INPT"
-          />
-          <span>INPT SNACK</span>
-        </div>
-        <div class="stats-area">
-          <button id="sound-btn" class="sound-toggle" onclick="toggleSound()">
-            🔊
-          </button>
-          <span>⏳ <span id="timer">90</span>s</span>
-          <span>💰 <span id="score">0</span> DH</span>
-        </div>
-      </header>
+    <div id="game-container">
+      <div id="sound-toggle">🔊</div>
+      <div class="lane-marker" id="line-1"></div>
+      <div class="lane-marker" id="line-2"></div>
 
-      <div id="main-area">
-        <div id="customer-panel">
-          <div class="bubble">
-            <h4 style="margin: 0 0 10px 0; color: #888">COMMANDE :</h4>
-            <div id="order-visuals"></div>
-          </div>
-          <div id="customer-info">
-            <div id="customer-avatar">😎</div>
-            <div id="customer-filiere" id="filiere-text">ASEDS</div>
-            <div id="customer-year" id="year-text">2ème Année</div>
-          </div>
-        </div>
-        <div id="prep-area">
-          <div id="plate"></div>
+      <div id="ui-layer">
+        <div class="hud-box"><span>⭐</span> <span id="score">0</span></div>
+        <div class="hud-box">
+          <span>🍔</span> <span id="height-meter">1</span>
         </div>
       </div>
 
-      <div id="controls">
-        <script>
-          const ings = [
-            { id: "pain", icon: "🥖", name: "Pain" },
-            { id: "sauce", icon: "🌶️", name: "Harissa" },
-            { id: "viande", icon: "🥩", name: "Kafta" },
-            { id: "frites", icon: "🍟", name: "Frites" },
-            { id: "fromage", icon: "🧀", name: "Fromage" },
-            { id: "salade", icon: "🥬", name: "Salade" },
-            { id: "tomate", icon: "🍅", name: "Tomate" },
-          ];
-          ings.forEach((ing) => {
-            document.write(`
-                        <div class="ing-control">
-                            <span class="ing-name">${ing.icon} ${ing.name}</span>
-                            <div class="btn-group">
-                                <button class="btn-sm btn-minus" onclick="removeIng('${ing.id}')">-</button>
-                                <button class="btn-sm btn-plus" onclick="addIng('${ing.id}')">+</button>
-                            </div>
-                        </div>
-                    `);
-          });
-        </script>
-        <button id="btn-trash" onclick="trashSandwich()">🗑️</button>
-        <button id="btn-serve" onclick="serveSandwich()">SERVIR</button>
-      </div>
+      <div id="damage-text">-3</div>
+      <div id="player"></div>
 
-      <div id="overlay">
-        <h1 style="color: #f1c40f">SERVICE TERMINÉ !</h1>
-        <p style="font-size: 20px">
-          Sandwiches servis : <span id="final-count">0</span>
-        </p>
-        <p style="font-size: 30px">
-          Score : <span id="final-score">0</span> DH
-        </p>
-        <button
-          id="restart-btn"
-          onclick="startGame()"
-          style="
-            padding: 15px 30px;
-            border-radius: 30px;
-            border: none;
-            background: #27ae60;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-          "
-        >
-          REJOUER
-        </button>
+      <div id="game-over-screen">
+        <h1 style="font-size: 40px; color: #ff6666">☠️ GAME OVER ☠️</h1>
+        <p id="cause-death" style="font-size: 18px; color: #ccc">Mort par...</p>
+        <p>Score: <span id="final-score">0</span></p>
+        <button onclick="startGame()">Réessayer</button>
       </div>
     </div>
-
-    <button class="back-to-menu" onclick="alert('Retour au menu...')">
-      ← Retour
+    <button class="back-to-menu" onclick="window.location.href='s1.html'">
+      <span class="arrow">←</span> Retour au Menu
     </button>
 
     <script>
-      let currentStack = [];
-      let currentOrder = [];
+      const gameContainer = document.getElementById("game-container");
+      const player = document.getElementById("player");
+      const scoreDisplay = document.getElementById("score");
+      const heightDisplay = document.getElementById("height-meter");
+      const gameOverScreen = document.getElementById("game-over-screen");
+      const finalScoreDisplay = document.getElementById("final-score");
+      const causeDeathDisplay = document.getElementById("cause-death");
+      const damageText = document.getElementById("damage-text");
+
+      // ELEMENTS AUDIO
+      const musicBg = document.getElementById("music-bg");
+      const sfxCoin = document.getElementById("sfx-coin");
+      const sfxHit = document.getElementById("sfx-hit");
+      const soundToggle = document.getElementById("sound-toggle");
+      let soundEnabled = true;
+
+      // Gestion du bouton son
+      soundToggle.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        soundToggle.innerText = soundEnabled ? "🔊" : "🔇";
+        if (!soundEnabled) musicBg.pause();
+        else if (gameRunning) musicBg.play();
+      });
+
+      // Config HARDCORE
+      const lanePositions = [16.66, 50, 83.33];
+      let currentLane = 1;
+      let gameRunning = false;
       let score = 0;
-      let timeLeft = 90;
-      let timerInterval;
-      let gameActive = false;
+      let speed = 0;
+      let speedBase = 6;
+      let spawnRate = 50;
+      let frameCount = 0;
+      let items = [];
+      let sandwichStack = [];
 
-      const ingredients = {
-        pain: { icon: "🥖", class: "pain" },
-        viande: { icon: "🥩", class: "viande" },
-        frites: { icon: "🍟", class: "frites" },
-        salade: { icon: "🥬", class: "salade" },
-        fromage: { icon: "🧀", class: "fromage" },
-        tomate: { icon: "🍅", class: "tomate" },
-        sauce: { icon: "🌶️", class: "sauce" },
-      };
-
-      const filieres = [
-        "ASEDS",
-        "ICCN",
-        "DATA",
-        "AMOA",
-        "SMART",
-        "SESNUM",
-        "CLOUD",
+      const ingredientsData = [
+        { type: "viande", emoji: "🥩" },
+        { type: "salade", emoji: "🥬" },
+        { type: "fromage", emoji: "🧀" },
+        { type: "tomate", emoji: "🍅" },
       ];
-      const avatars = ["👨‍💻", "👩‍💻", "🤔", "😎", "🤓"];
+      const obstaclesData = ["🧱", "🗑️", "💩", "🚧"];
 
-      function toggleSound() {
-        const m = document.getElementById("game-music");
-        const b = document.getElementById("sound-btn");
-        if (m.paused) {
-          m.play();
-          b.innerText = "🔊";
+      document.addEventListener("keydown", (e) => {
+        if (!gameRunning) return;
+        if (e.key === "ArrowLeft" && currentLane > 0) currentLane--;
+        else if (e.key === "ArrowRight" && currentLane < 2) currentLane++;
+        player.style.left = lanePositions[currentLane] + "%";
+      });
+
+      function updateSandwichVisuals() {
+        player.innerHTML = "";
+        let baseBread = document.createElement("div");
+        baseBread.className = "ingredient-layer pain-bas";
+        baseBread.innerText = "🍞";
+        player.appendChild(baseBread);
+
+        sandwichStack.forEach((ing) => {
+          let div = document.createElement("div");
+          div.className = `ingredient-layer ${ing.type}`;
+          div.innerText = ing.emoji;
+          player.appendChild(div);
+        });
+
+        let totalLayers = sandwichStack.length + 1;
+        heightDisplay.innerText = totalLayers;
+
+        if (totalLayers === 1) {
+          heightDisplay.parentElement.style.borderColor = "red";
+          heightDisplay.style.color = "red";
         } else {
-          m.pause();
-          b.innerText = "🔇";
+          heightDisplay.parentElement.style.borderColor = "white";
+          heightDisplay.style.color = "#FFD700";
         }
       }
 
-      function startGame() {
-        score = 0;
-        timeLeft = 90;
-        gameActive = true;
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("score").innerText = "0";
-        updateTimer();
-        clearInterval(timerInterval);
-        timerInterval = setInterval(updateTimer, 1000);
-        nextCustomer();
-      }
-
-      function updateTimer() {
-        timeLeft--;
-        document.getElementById("timer").innerText = timeLeft;
-        if (timeLeft <= 0) {
-          gameActive = false;
-          clearInterval(timerInterval);
-          document.getElementById("overlay").style.display = "flex";
-          document.getElementById("final-score").innerText = score;
-          document.getElementById("final-count").innerText = score / 20; // Approximation
+      function addIngredient(info) {
+        sandwichStack.push(info);
+        updateSandwichVisuals();
+        score += 100;
+        if (soundEnabled) {
+          sfxCoin.currentTime = 0;
+          sfxCoin.play();
         }
       }
 
-      function nextCustomer() {
-        trashSandwich();
-        document.getElementById("customer-filiere").innerText =
-          filieres[Math.floor(Math.random() * filieres.length)];
-        document.getElementById("customer-avatar").innerText =
-          avatars[Math.floor(Math.random() * avatars.length)];
+      function takeDamage(amount) {
+        player.classList.remove("effect-shake");
+        void player.offsetWidth;
+        player.classList.add("effect-shake");
 
-        // Générer commande
-        currentOrder = ["pain"];
-        const pool = Object.keys(ingredients).filter((k) => k !== "pain");
-        const len = Math.floor(Math.random() * 3) + 2;
-        for (let i = 0; i < len; i++)
-          currentOrder.push(pool[Math.floor(Math.random() * pool.length)]);
-        currentOrder.push("pain");
+        if (soundEnabled) {
+          sfxHit.currentTime = 0;
+          sfxHit.play();
+        }
 
-        renderOrder();
+        damageText.style.display = "block";
+        damageText.style.top = player.offsetTop - 60 + "px";
+        damageText.style.left = player.offsetLeft + 10 + "px";
+        setTimeout(() => (damageText.style.display = "none"), 500);
+
+        for (let k = 0; k < amount; k++) {
+          if (sandwichStack.length > 0) {
+            sandwichStack.pop();
+          } else {
+            gameOver("Sandwich détruit !");
+            return;
+          }
+        }
+        updateSandwichVisuals();
       }
 
-      function renderOrder() {
-        const container = document.getElementById("order-visuals");
-        container.innerHTML = "";
-        currentOrder.forEach((key) => {
-          const div = document.createElement("div");
-          div.className = `order-icon ${ingredients[key].class}`;
-          div.innerText =
-            ingredients[
-              ingredients[key].class === "sauce" ? "sauce" : key
-            ].icon;
-          container.appendChild(div);
+      function spawnItem() {
+        const item = document.createElement("div");
+        item.className = "item";
+        const rand = Math.random();
+        const lane = Math.floor(Math.random() * 3);
+        item.dataset.lane = lane;
+        item.style.left = lanePositions[lane] + "%";
+
+        if (rand < 0.1) {
+          item.dataset.type = "bomb";
+          item.innerText = "💣";
+        } else if (rand < 0.55) {
+          item.dataset.type = "obstacle";
+          item.innerText =
+            obstaclesData[Math.floor(Math.random() * obstaclesData.length)];
+        } else {
+          const specificIngredient =
+            ingredientsData[Math.floor(Math.random() * ingredientsData.length)];
+          item.dataset.type = "ingredient";
+          item.dataset.ingredientInfo = JSON.stringify(specificIngredient);
+          item.innerText = specificIngredient.emoji;
+        }
+
+        gameContainer.appendChild(item);
+        items.push({
+          element: item,
+          lane: lane,
+          y: -70,
+          type: item.dataset.type,
         });
       }
 
-      function addIng(type) {
-        if (!gameActive) return;
-        currentStack.push(type);
-        const div = document.createElement("div");
-        div.className = `layer ${ingredients[type].class} visual-${type}`;
-        div.innerText = ingredients[type].icon;
-        document.getElementById("plate").appendChild(div);
-      }
+      function gameLoop() {
+        if (!gameRunning) return;
+        frameCount++;
+        score += 0.5;
+        scoreDisplay.innerText = Math.floor(score);
+        if (frameCount % 200 === 0) speed += 1;
+        if (frameCount % spawnRate === 0) spawnItem();
 
-      function removeIng(type) {
-        if (!gameActive) return;
-        const idx = currentStack.lastIndexOf(type);
-        if (idx !== -1) {
-          currentStack.splice(idx, 1);
-          const layers = document.getElementsByClassName(`visual-${type}`);
-          if (layers.length > 0) layers[layers.length - 1].remove();
+        for (let i = items.length - 1; i >= 0; i--) {
+          let obj = items[i];
+          obj.y += speed;
+          obj.element.style.top = obj.y + "px";
+
+          if (obj.y > 480 && obj.y < 560) {
+            if (obj.lane === currentLane) {
+              if (obj.type === "ingredient") {
+                addIngredient(JSON.parse(obj.element.dataset.ingredientInfo));
+              } else if (obj.type === "bomb") {
+                gameOver("EXPLOSION 💣");
+              } else {
+                takeDamage(3);
+              }
+              obj.element.remove();
+              items.splice(i, 1);
+              continue;
+            }
+          }
+
+          if (obj.y > 620) {
+            obj.element.remove();
+            items.splice(i, 1);
+          }
         }
+        requestAnimationFrame(gameLoop);
       }
 
-      function trashSandwich() {
-        currentStack = [];
-        document.getElementById("plate").innerHTML = "";
+      function gameOver(cause) {
+        if (!gameRunning) return;
+        gameRunning = false;
+        musicBg.pause(); // Arrêter la musique
+        causeDeathDisplay.innerText = cause || "Écrasé";
+        finalScoreDisplay.innerText = Math.floor(score);
+        gameOverScreen.style.display = "flex";
       }
 
-      function showFeedback(type, text) {
-        const wrapper = document.getElementById("game-wrapper");
-        const feedback = document.createElement("div");
-        feedback.className = `feedback-pop feedback-${type}`;
-        feedback.innerText = text;
-        document.body.appendChild(feedback);
+      function startGame() {
+        sandwichStack = [];
+        items.forEach((item) => item.element.remove());
+        items = [];
+        score = 0;
+        speed = speedBase;
+        spawnRate = 45;
+        currentLane = 1;
+        frameCount = 0;
+        gameRunning = true;
 
-        if (type === "good") {
-          wrapper.style.borderColor = "#27ae60";
-        } else {
-          wrapper.style.borderColor = "#c0392b";
+        // LANCER LA MUSIQUE
+        if (soundEnabled) {
+          musicBg.currentTime = 0;
+          musicBg.play();
         }
 
-        setTimeout(() => {
-          feedback.remove();
-          wrapper.style.borderColor = getComputedStyle(
-            document.documentElement
-          ).getPropertyValue("--inpt-blue");
-        }, 1000);
-      }
-
-      function serveSandwich() {
-        if (!gameActive) return;
-        if (JSON.stringify(currentStack) === JSON.stringify(currentOrder)) {
-          // Succès
-          score += 20;
-          document.getElementById("score").innerText = score;
-          showFeedback("good", "PARFAIT ! 👍");
-          setTimeout(nextCustomer, 1000);
-        } else {
-          // Erreur
-          showFeedback("bad", "ERREUR ! 😡");
-        }
+        gameOverScreen.style.display = "none";
+        player.style.left = lanePositions[1] + "%";
+        updateSandwichVisuals();
+        requestAnimationFrame(gameLoop);
       }
 
       startGame();
