@@ -46,7 +46,7 @@
         left: 66%;
       }
 
-      /* --- UI / HUD (CORRIGÉ ICI) --- */
+      /* --- UI / HUD --- */
       #ui-layer {
         position: absolute;
         top: 10px;
@@ -59,9 +59,8 @@
         z-index: 20;
       }
 
-      /* Le style des boîtes de texte */
       .hud-box {
-        background: rgba(0, 0, 0, 0.7); /* Fond noir transparent */
+        background: rgba(0, 0, 0, 0.7);
         border: 2px solid white;
         border-radius: 15px;
         padding: 8px 15px;
@@ -75,7 +74,7 @@
       }
 
       #height-meter {
-        color: #ffd700; /* Texte doré pour les couches */
+        color: #ffd700;
       }
 
       /* --- JOUEUR ET OBJETS --- */
@@ -229,28 +228,8 @@
           opacity: 0;
         }
       }
-      .back-to-menu {
-        position: fixed;
-        top: 90px;
-        left: 20px;
-        background-color: #ffcc00;
-        color: #000;
-        border: none;
-        padding: 10px 20px;
-        font-size: 1rem;
-        font-weight: bold;
-        border-radius: 50px;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
 
-      /* --- BOUTON SON --- */
-      #sound-toggle {
+      #sound-btn {
         background: rgba(0, 0, 0, 0.5);
         border: 1px solid white;
         color: white;
@@ -267,6 +246,25 @@
         justify-content: center;
         cursor: pointer;
       }
+
+      .back-to-menu {
+        position: fixed;
+        top: 90px;
+        left: 20px;
+        background-color: #ffcc00;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
     </style>
   </head>
   <body>
@@ -276,7 +274,6 @@
     <audio id="sfx-coin">
       <source
         src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3"
-        !
         type="audio/mpeg"
       />
     </audio>
@@ -286,9 +283,15 @@
         type="audio/mpeg"
       />
     </audio>
+    <audio id="sfx-explode">
+      <source
+        src="https://assets.mixkit.co/active_storage/sfx/1494/1494-preview.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
 
     <div id="game-container">
-      <div id="sound-toggle">🔊</div>
+      <div id="sound-btn">🔊</div>
       <div class="lane-marker" id="line-1"></div>
       <div class="lane-marker" id="line-2"></div>
 
@@ -309,6 +312,7 @@
         <button onclick="startGame()">Réessayer</button>
       </div>
     </div>
+
     <button class="back-to-menu" onclick="window.location.href='s1.html'">
       <span class="arrow">←</span> Retour au Menu
     </button>
@@ -323,22 +327,21 @@
       const causeDeathDisplay = document.getElementById("cause-death");
       const damageText = document.getElementById("damage-text");
 
-      // ELEMENTS AUDIO
+      // --- LOGIQUE SONORE ---
       const musicBg = document.getElementById("music-bg");
       const sfxCoin = document.getElementById("sfx-coin");
       const sfxHit = document.getElementById("sfx-hit");
-      const soundToggle = document.getElementById("sound-toggle");
-      let soundEnabled = true;
+      const sfxExplode = document.getElementById("sfx-explode");
+      const soundBtn = document.getElementById("sound-btn");
+      let isMuted = false;
 
-      // Gestion du bouton son
-      soundToggle.addEventListener("click", () => {
-        soundEnabled = !soundEnabled;
-        soundToggle.innerText = soundEnabled ? "🔊" : "🔇";
-        if (!soundEnabled) musicBg.pause();
+      soundBtn.addEventListener("click", () => {
+        isMuted = !isMuted;
+        soundBtn.innerText = isMuted ? "🔇" : "🔊";
+        if (isMuted) musicBg.pause();
         else if (gameRunning) musicBg.play();
       });
 
-      // Config HARDCORE
       const lanePositions = [16.66, 50, 83.33];
       let currentLane = 1;
       let gameRunning = false;
@@ -395,7 +398,7 @@
         sandwichStack.push(info);
         updateSandwichVisuals();
         score += 100;
-        if (soundEnabled) {
+        if (!isMuted) {
           sfxCoin.currentTime = 0;
           sfxCoin.play();
         }
@@ -406,7 +409,8 @@
         void player.offsetWidth;
         player.classList.add("effect-shake");
 
-        if (soundEnabled) {
+        // --- SON D'OBSTACLE ---
+        if (!isMuted) {
           sfxHit.currentTime = 0;
           sfxHit.play();
         }
@@ -477,6 +481,7 @@
               if (obj.type === "ingredient") {
                 addIngredient(JSON.parse(obj.element.dataset.ingredientInfo));
               } else if (obj.type === "bomb") {
+                if (!isMuted) sfxExplode.play();
                 gameOver("EXPLOSION 💣");
               } else {
                 takeDamage(3);
@@ -486,7 +491,6 @@
               continue;
             }
           }
-
           if (obj.y > 620) {
             obj.element.remove();
             items.splice(i, 1);
@@ -498,7 +502,7 @@
       function gameOver(cause) {
         if (!gameRunning) return;
         gameRunning = false;
-        musicBg.pause(); // Arrêter la musique
+        musicBg.pause();
         causeDeathDisplay.innerText = cause || "Écrasé";
         finalScoreDisplay.innerText = Math.floor(score);
         gameOverScreen.style.display = "flex";
@@ -514,19 +518,15 @@
         currentLane = 1;
         frameCount = 0;
         gameRunning = true;
-
-        // LANCER LA MUSIQUE
-        if (soundEnabled) {
+        if (!isMuted) {
           musicBg.currentTime = 0;
           musicBg.play();
         }
-
         gameOverScreen.style.display = "none";
         player.style.left = lanePositions[1] + "%";
         updateSandwichVisuals();
         requestAnimationFrame(gameLoop);
       }
-
       startGame();
     </script>
   </body>
