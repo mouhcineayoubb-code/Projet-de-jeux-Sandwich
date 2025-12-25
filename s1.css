@@ -1,4 +1,3 @@
-/* --- RESET & GLOBAL --- */
 * {
   margin: 0;
   padding: 0;
@@ -312,3 +311,4 @@ body {
 .container {
   flex: 1; /* Pousse le footer vers le bas si la page est vide */
 }
+
